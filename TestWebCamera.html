@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Test Web Camera</title>
+    </head>
+    <body>
+        <div>
+            <select id="cameraSelect"></select>
+        </div>
+        <div>
+            <video id="player" controls playsinline muted autoplay></video>
+        </div>
+        <script>
+            const player = document.getElementById("player");
+            const cameraSelect = document.getElementById("cameraSelect");
+
+            // カメラの一覧を取得してドロップダウンに追加
+            navigator.mediaDevices.enumerateDevices().then((devices) => {
+                devices.forEach((device) => {
+                    if (device.kind === "videoinput") {
+                        const option = document.createElement("option");
+                        option.value = device.deviceId;
+                        option.textContent =
+                            device.label || `カメラ ${cameraSelect.length + 1}`;
+                        cameraSelect.appendChild(option);
+                    }
+                });
+            });
+
+            cameraSelect.addEventListener("change", () => {
+                if (player.srcObject) {
+                    player.srcObject
+                        .getTracks()
+                        .forEach((track) => track.stop());
+                }
+
+                const constraints = {
+                    video: {
+                        deviceId: cameraSelect.value
+                            ? { exact: cameraSelect.value }
+                            : undefined,
+                    },
+                };
+
+                navigator.mediaDevices
+                    .getUserMedia(constraints)
+                    .then((stream) => {
+                        player.srcObject = stream;
+                    })
+                    .catch((error) => {
+                        console.error("エラー: ", error);
+                        alert("カメラへのアクセスに失敗しました。");
+                    });
+            });
+
+            // 初回のカメラストリームを取得
+            if (cameraSelect.value) {
+                cameraSelect.dispatchEvent(new Event("change"));
+            }
+        </script>
+    </body>
+</html>
