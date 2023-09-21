@@ -74,16 +74,20 @@
                                 const settings = stream
                                     .getVideoTracks()[0]
                                     .getSettings();
-                                const height = settings.height;
+                                const swidth = settings.width;
+                                const sheight = settings.height;
                                 const option = document.createElement("option");
-                                option.value = `${width}x${height}`;
-                                option.textContent = `${width} x ${height}`;
+                                option.value = `${swidth}x${sheight}`;
+                                option.textContent = `${swidth} x ${sheight}`;
                                 resolutionSelect.appendChild(option);
 
                                 // stop the stream
                                 stream
                                     .getTracks()
                                     .forEach((track) => track.stop());
+                            })
+                            .catch((error) => {
+                                // skip
                             });
                     } catch (error) {
                         // skip
