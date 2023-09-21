@@ -8,6 +8,7 @@
     <body>
         <div>
             <select id="cameraSelect"></select>
+            <input type="button" value="Open" onclick="changeSelectedCamera()" />
         </div>
         <div>
             <video id="player" controls playsinline muted autoplay></video>
@@ -30,6 +31,19 @@
                         }
                     });
                 });
+            }
+
+            function requestCamera() {
+                navigator.mediaDevices
+                    .getUserMedia({ video: true })
+                    .then((stream) => {
+                        stream.getTracks().forEach((track) => track.stop()); // Use the stream to get permission and then stop it immediately
+                        listCameras();
+                    })
+                    .catch((error) => {
+                        console.error("エラー: ", error);
+                        alert("カメラへのアクセス許可が拒否されました。");
+                    });
             }
 
             function startCamera() {
@@ -70,12 +84,8 @@
                 startCamera();
             }
 
-            cameraSelect.addEventListener("change", (event) => {
-                changeSelectedCamera();
-            });
-
-            startCamera();
-            listCameras(); // 最初にカメラの一覧を取得
+            // カメラの許可を表示
+            requestCamera();
 
             // カメラの一覧を取得し、変更があったら再取得する
             navigator.mediaDevices.addEventListener("devicechange", (event) => {
