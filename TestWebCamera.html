@@ -32,22 +32,7 @@
                 });
             }
 
-            function stopCamera() {
-                if (player.srcObject) {
-                    player.srcObject.getTracks().forEach((track) => {
-                        track.stop();
-                    });
-                    player.srcObject = null;
-                }
-            }
-
-            function changeSelectedCamera() {
-                if (player.srcObject) {
-                    player.srcObject.getTracks().forEach((track) => {
-                        track.stop();
-                    });
-                    player.srcObject = null;
-                }
+            function startCamera() {
                 const constraints = {
                     video: {
                         deviceId: cameraSelect.value
@@ -66,10 +51,30 @@
                     });
             }
 
+            function stopCamera() {
+                if (player.srcObject) {
+                    player.srcObject.getTracks().forEach((track) => {
+                        track.stop();
+                    });
+                    player.srcObject = null;
+                }
+            }
+
+            function changeSelectedCamera() {
+                if (player.srcObject) {
+                    player.srcObject.getTracks().forEach((track) => {
+                        track.stop();
+                    });
+                    player.srcObject = null;
+                }
+                startCamera();
+            }
+
             cameraSelect.addEventListener("change", (event) => {
                 changeSelectedCamera();
             });
 
+            startCamera();
             listCameras(); // 最初にカメラの一覧を取得
 
             // カメラの一覧を取得し、変更があったら再取得する
