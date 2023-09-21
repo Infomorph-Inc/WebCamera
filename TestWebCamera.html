@@ -16,26 +16,38 @@
             const player = document.getElementById("player");
             const cameraSelect = document.getElementById("cameraSelect");
 
-            // カメラの一覧を取得してドロップダウンに追加
-            navigator.mediaDevices.enumerateDevices().then((devices) => {
-                devices.forEach((device) => {
-                    if (device.kind === "videoinput") {
-                        const option = document.createElement("option");
-                        option.value = device.deviceId;
-                        option.textContent =
-                            device.label || `カメラ ${cameraSelect.length + 1}`;
-                        cameraSelect.appendChild(option);
-                    }
+            function listCameras() {
+                navigator.mediaDevices.enumerateDevices().then((devices) => {
+                    cameraSelect.innerHTML = ""; // 既存のオプションをクリア
+                    devices.forEach((device) => {
+                        if (device.kind === "videoinput") {
+                            const option = document.createElement("option");
+                            option.value = device.deviceId;
+                            option.textContent =
+                                device.label ||
+                                `カメラ ${cameraSelect.length + 1}`;
+                            cameraSelect.appendChild(option);
+                        }
+                    });
                 });
-            });
+            }
 
-            cameraSelect.addEventListener("change", () => {
+            function stopCamera() {
                 if (player.srcObject) {
-                    player.srcObject
-                        .getTracks()
-                        .forEach((track) => track.stop());
+                    player.srcObject.getTracks().forEach((track) => {
+                        track.stop();
+                    });
+                    player.srcObject = null;
                 }
+            }
 
+            function changeSelectedCamera() {
+                if (player.srcObject) {
+                    player.srcObject.getTracks().forEach((track) => {
+                        track.stop();
+                    });
+                    player.srcObject = null;
+                }
                 const constraints = {
                     video: {
                         deviceId: cameraSelect.value
@@ -43,7 +55,6 @@
                             : undefined,
                     },
                 };
-
                 navigator.mediaDevices
                     .getUserMedia(constraints)
                     .then((stream) => {
@@ -53,12 +64,30 @@
                         console.error("エラー: ", error);
                         alert("カメラへのアクセスに失敗しました。");
                     });
+            }
+
+            cameraSelect.addEventListener("change", (event) => {
+                changeSelectedCamera();
             });
 
-            // 初回のカメラストリームを取得
-            if (cameraSelect.value) {
-                cameraSelect.dispatchEvent(new Event("change"));
-            }
+            listCameras(); // 最初にカメラの一覧を取得
+
+            // カメラの一覧を取得し、変更があったら再取得する
+            navigator.mediaDevices.addEventListener("devicechange", (event) => {
+                listCameras();
+            });
+
+            // ページが非表示になるときにカメラを停止する
+            document.addEventListener("visibilitychange", (event) => {
+                if (document.visibilityState === "hidden") {
+                    stopCamera();
+                }
+            });
+
+            // ページが閉じられるときにカメラを停止する
+            window.addEventListener("beforeunload", (event) => {
+                stopCamera();
+            });
         </script>
     </body>
 </html>
