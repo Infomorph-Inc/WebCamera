@@ -15,6 +15,7 @@
     <body>
         <div>
             <select id="cameraSelect"></select>
+            <select id="resolutionSelect"></select>
             <input
                 type="button"
                 value="Open"
@@ -26,24 +27,75 @@
         </div>
         <div id="resolution"></div>
         <script>
-            const player = document.getElementById("player");
             const cameraSelect = document.getElementById("cameraSelect");
+            const resolutionSelect =
+                document.getElementById("resolutionSelect");
+            const player = document.getElementById("player");
 
             function listCameras() {
                 navigator.mediaDevices.enumerateDevices().then((devices) => {
-                    cameraSelect.innerHTML = ""; // 既存のオプションをクリア
+                    cameraSelect.innerHTML = "";
                     devices.forEach((device) => {
                         if (device.kind === "videoinput") {
                             const option = document.createElement("option");
                             option.value = device.deviceId;
                             option.textContent =
                                 device.label ||
-                                `カメラ ${cameraSelect.length + 1}`;
+                                `Camera ${cameraSelect.length + 1}`;
                             cameraSelect.appendChild(option);
                         }
                     });
                 });
             }
+
+            async function listSupportedResolutions(deviceId) {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { deviceId: deviceId },
+                });
+                const settings = stream.getVideoTracks()[0].getSettings();
+                const defaultAspectRatio = settings.width / settings.height;
+
+                const widths = [
+                    3840, 1920, 1600, 1280, 1024, 800, 640, 480, 320,
+                ];
+
+                resolutionSelect.innerHTML = "";
+
+                for (let width of widths) {
+                    try {
+                        await navigator.mediaDevices
+                            .getUserMedia({
+                                video: {
+                                    deviceId: deviceId,
+                                    width: { exact: width },
+                                },
+                            })
+                            .then((stream) => {
+                                const settings = stream
+                                    .getVideoTracks()[0]
+                                    .getSettings();
+                                const height = settings.height;
+                                const option = document.createElement("option");
+                                option.value = `${width}x${height}`;
+                                option.textContent = `${width} x ${height}`;
+                                resolutionSelect.appendChild(option);
+
+                                // stop the stream
+                                stream
+                                    .getTracks()
+                                    .forEach((track) => track.stop());
+                            });
+                    } catch (error) {
+                        // skip
+                    }
+                }
+
+                stream.getTracks().forEach((track) => track.stop());
+            }
+
+            cameraSelect.addEventListener("change", (event) => {
+                listSupportedResolutions(cameraSelect.value);
+            });
 
             function requestCamera() {
                 navigator.mediaDevices
@@ -53,16 +105,26 @@
                         listCameras();
                     })
                     .catch((error) => {
-                        console.error("エラー: ", error);
-                        alert("カメラへのアクセス許可が拒否されました。");
+                        console.error("Error: ", error);
+                        alert("Access to camera failed.");
                     });
             }
 
             function startCamera() {
+                const [width, height] = resolutionSelect.value
+                    ? resolutionSelect.value.split("x")
+                    : [undefined, undefined];
+
                 const constraints = {
                     video: {
                         deviceId: cameraSelect.value
                             ? { exact: cameraSelect.value }
+                            : undefined,
+                        width: resolutionSelect.value
+                            ? { exact: parseInt(width) }
+                            : undefined,
+                        height: resolutionSelect.value
+                            ? { exact: parseInt(height) }
                             : undefined,
                     },
                 };
@@ -73,8 +135,8 @@
                         displayResolution();
                     })
                     .catch((error) => {
-                        console.error("エラー: ", error);
-                        alert("カメラへのアクセスに失敗しました。");
+                        console.error("Error: ", error);
+                        alert("Access to camera failed.");
                     });
             }
 
