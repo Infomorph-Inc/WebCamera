@@ -24,6 +24,7 @@
         <div>
             <video id="player" controls playsinline muted autoplay></video>
         </div>
+        <div id="resolution"></div>
         <script>
             const player = document.getElementById("player");
             const cameraSelect = document.getElementById("cameraSelect");
@@ -69,6 +70,7 @@
                     .getUserMedia(constraints)
                     .then((stream) => {
                         player.srcObject = stream;
+                        displayResolution();
                     })
                     .catch((error) => {
                         console.error("エラー: ", error);
@@ -93,6 +95,16 @@
                     player.srcObject = null;
                 }
                 startCamera();
+            }
+
+            function displayResolution() {
+                const tracks = player.srcObject.getVideoTracks();
+                if (tracks && tracks.length > 0) {
+                    const settings = tracks[0].getSettings();
+                    const resolutionElement =
+                        document.getElementById("resolution");
+                    resolutionElement.textContent = `Resolution: ${settings.width} x ${settings.height}`;
+                }
             }
 
             // カメラの許可を表示
