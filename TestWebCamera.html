@@ -35,8 +35,12 @@
             function listCameras() {
                 navigator.mediaDevices.enumerateDevices().then((devices) => {
                     cameraSelect.innerHTML = "";
+                    let firstDeviceId;
                     devices.forEach((device) => {
                         if (device.kind === "videoinput") {
+                            if (!firstDeviceId) {
+                                firstDeviceId = device.deviceId;
+                            }
                             const option = document.createElement("option");
                             option.value = device.deviceId;
                             option.textContent =
@@ -45,6 +49,10 @@
                             cameraSelect.appendChild(option);
                         }
                     });
+
+                    if (firstDeviceId) {
+                        listSupportedResolutions(firstDeviceId);
+                    }
                 });
             }
 
