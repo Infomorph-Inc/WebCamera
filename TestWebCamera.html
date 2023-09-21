@@ -4,11 +4,22 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Test Web Camera</title>
+        <style>
+            #player {
+                width: 100%;
+                height: auto;
+                object-fit: contain;
+            }
+        </style>
     </head>
     <body>
         <div>
             <select id="cameraSelect"></select>
-            <input type="button" value="Open" onclick="changeSelectedCamera()" />
+            <input
+                type="button"
+                value="Open"
+                onclick="changeSelectedCamera()"
+            />
         </div>
         <div>
             <video id="player" controls playsinline muted autoplay></video>
