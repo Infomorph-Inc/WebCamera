@@ -73,7 +73,6 @@
 
                 // 重複を避けるための解像度セット
                 const resolutionsSet = new Set();
-                let maxWidth = 7680;
 
                 for (let width of widths) {
                     try {
@@ -81,10 +80,9 @@
                             await navigator.mediaDevices.getUserMedia({
                                 video: {
                                     deviceId: { exact: deviceId },
-                                    width: { min: width, max: maxWidth },
+                                    width: { ideal: width },
                                 },
                             });
-                        maxWidth = width - 1;
 
                         const settings = stream
                             .getVideoTracks()[0]
