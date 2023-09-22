@@ -14,6 +14,7 @@
     </head>
     <body>
         <div>
+            <input type="button" value="Refresh" onclick="listCameras()" />
             <select id="cameraSelect"></select>
             <select id="resolutionSelect"></select>
             <input
@@ -35,6 +36,7 @@
             function listCameras() {
                 navigator.mediaDevices.enumerateDevices().then((devices) => {
                     cameraSelect.innerHTML = "";
+                    resolutionSelect.innerHTML = "";
                     let firstDeviceId;
                     devices.forEach((device) => {
                         if (device.kind === "videoinput") {
